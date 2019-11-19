@@ -24,15 +24,20 @@ class ScrollingActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     lateinit var questionView: TextView
     private val tag = "MainActivity"
+    lateinit var linkToWiki: String
     var text: String? = ""
+    var link: String? = ""
+    var fabEnabled = false
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(tag, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scrolling)
-        setSupportActionBar(toolbar)
         fab.setOnClickListener { view ->
-            //Snackbar.make(view, "", Snackbar.LENGTH_LONG)
-            // TODO Add link to database
+            Log.d(tag, link)
+        }
+        refreshButton.setOnClickListener { view ->
+            val apiToCheck = getString(R.string.api_link)
+            run(apiToCheck)
         }
         //("https://en.wikipedia.org/wiki/Special:Random")
 
@@ -63,9 +68,12 @@ class ScrollingActivity : AppCompatActivity() {
                 val resStr = text.toString()
                 val jsonTitle = JSONObject(resStr).getString("title")
                 val jsonSummary = JSONObject(resStr).getString("extract")
+                val contentUrls = JSONObject(resStr).getString("content_urls")
+                val mobileData = JSONObject(contentUrls).getString("mobile")
+                link = JSONObject(mobileData).getString("page")
                 Log.d(tag, jsonSummary)
                 this@ScrollingActivity.runOnUiThread(java.lang.Runnable {
-                    questionView.text = jsonTitle+"\n"+jsonSummary
+                    questionView.text = jsonTitle+"\n\n\n"+jsonSummary
                 })
             }
         })
