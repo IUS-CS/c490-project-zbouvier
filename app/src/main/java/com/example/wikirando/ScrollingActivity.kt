@@ -17,6 +17,7 @@ import androidx.core.app.ComponentActivity
 import androidx.core.app.ComponentActivity.ExtraData
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.room.Room
 import kotlinx.android.synthetic.main.content_scrolling.*
 
 
@@ -29,13 +30,17 @@ class ScrollingActivity : AppCompatActivity() {
     var link: String? = ""
     var fabEnabled = false
     override fun onCreate(savedInstanceState: Bundle?) {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "link_table"
+        ).build()
         Log.d(tag, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scrolling)
-        fab.setOnClickListener { view ->
-            Log.d(tag, link)
+        fab.setOnClickListener { _ ->
+            Log.d(tag, link!!)
         }
-        refreshButton.setOnClickListener { view ->
+        refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
             run(apiToCheck)
         }
