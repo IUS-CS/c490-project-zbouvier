@@ -13,27 +13,27 @@ import java.io.IOException
 import java.net.URL
 import org.json.JSONObject
 import android.R.string
-import androidx.core.app.ComponentActivity
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import androidx.room.Room
-import kotlinx.android.synthetic.main.content_scrolling.*
+
+
+
+
+
 
 
 class ScrollingActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     lateinit var questionView: TextView
     private val tag = "MainActivity"
-    lateinit var linkToWiki: String
+    private lateinit var db: AppDatabase
     var text: String? = ""
     var link: String? = ""
-    var fabEnabled = false
     override fun onCreate(savedInstanceState: Bundle?) {
-        val db = Room.databaseBuilder(
+         db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "link_table"
         ).build()
+
         Log.d(tag, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scrolling)
@@ -43,6 +43,7 @@ class ScrollingActivity : AppCompatActivity() {
         refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
             run(apiToCheck)
+            //populateWithTestData(db)
         }
         //("https://en.wikipedia.org/wiki/Special:Random")
 
@@ -79,6 +80,7 @@ class ScrollingActivity : AppCompatActivity() {
                 Log.d(tag, jsonSummary)
                 this@ScrollingActivity.runOnUiThread(java.lang.Runnable {
                     questionView.text = jsonTitle+"\n\n\n"+jsonSummary
+                    //Log.d(tag, db.linkDao().getAll().toString())
                 })
             }
         })
@@ -88,7 +90,15 @@ class ScrollingActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_scrolling, menu)
         return true
     }
+    private fun addLink(db: AppDatabase, user: Link): Link {
+        db.linkDao().insertAll(user)
+        return user
+    }
+    private fun populateWithTestData(db: AppDatabase) {
+        var user = Link(1,"Testing", "ree.com")
 
+        addLink(db, user)
+    }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long

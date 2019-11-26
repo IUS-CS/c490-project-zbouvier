@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 
 @Entity (tableName = "link_table")
 data class Link(
-    @PrimaryKey val uid: Int,
-    @ColumnInfo(name = "link_title") val linkTitle: String?,
+    @PrimaryKey(autoGenerate = true)
+    var foodId: Int = 0,
+    @ColumnInfo(name = "link_title") var linkTitle: String?,
     @ColumnInfo(name = "link_url") val linkUrl: String?
 )
