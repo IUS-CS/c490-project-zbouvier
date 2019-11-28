@@ -1,11 +1,13 @@
 package com.example.wikirando
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_scrolling.*
@@ -18,14 +20,16 @@ import java.lang.Exception
 
 class ScrollingActivity : AppCompatActivity() {
     private val client = OkHttpClient()
-    lateinit var questionView: TextView
+    internal lateinit var questionView: TextView
     private val tag = "MainActivity"
     private lateinit var db: AppDatabase
+
     val viewModel: ScrollingActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ScrollingActivityViewModel::class.java)
     }
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
          db = Room.databaseBuilder(
@@ -57,23 +61,26 @@ class ScrollingActivity : AppCompatActivity() {
                 db.linkDao().insertAll(newLink)
                 Log.d(tag, "$title: ${viewModel.link} inserted!")
             }
-            //Log.d(tag, link!!)
-            //Log.d(tag, db.linkDao().getAll().toString())
         }
         refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
             run(apiToCheck)
-            //populateWithTestData(db)
         }
-        //("https://en.wikipedia.org/wiki/Special:Random")
-
     }
     override fun onStart() {
         Log.d(tag, "OnStart")
         super.onStart()
         questionView = findViewById(R.id.scrollingText)
-        val apiToCheck = getString(R.string.api_link)
-        run(apiToCheck)
+        if(viewModel.firstRun)
+        {
+            val apiToCheck: String = getString(R.string.api_link)
+            run(apiToCheck)
+            viewModel.firstRun = false
+        }
+        else
+        {
+            questionView.text = viewModel.title+"\n\n\n"+viewModel.summary
+        }
     }
     fun run(url: String)
     {
@@ -100,6 +107,7 @@ class ScrollingActivity : AppCompatActivity() {
                 val mobileData = JSONObject(contentUrls).getString("mobile")
                 viewModel.link = JSONObject(mobileData).getString("page")
                 viewModel.title = jsonTitle
+                viewModel.summary = jsonSummary
                 Log.d(tag, jsonSummary)
                 this@ScrollingActivity.runOnUiThread(java.lang.Runnable {
                     questionView.text = jsonTitle+"\n\n\n"+jsonSummary
@@ -121,6 +129,16 @@ class ScrollingActivity : AppCompatActivity() {
         var user = Link(null,"Testing", "ree.com")
 
         addLink(db, user)
+    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
+            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show()
+        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
+            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show()
+        }
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will

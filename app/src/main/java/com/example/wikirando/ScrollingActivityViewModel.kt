@@ -10,8 +10,10 @@ class ScrollingActivityViewModel : ViewModel() {
     var text: String? = ""
     var title: String? = ""
     var link: String? = ""
+    var firstRun: Boolean = true
+    var summary: String? = ""
     var fabEnabled: Boolean = false
     private val client = OkHttpClient()
-    lateinit var questionView: TextView
     private val tag = "ScrollingActivityViewModel"
+
 }
