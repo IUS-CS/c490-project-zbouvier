@@ -10,6 +10,12 @@ interface LinkDao {
     @Query("SELECT * FROM link_table")
     fun getAll(): List<Link>
 
+    @Query("SELECT * FROM link_table WHERE link_title = (:userTitle) LIMIT 1")
+    fun getByTitle(userTitle: String?): Link
+
+    @Query("SELECT * FROM link_table WHERE link_url = (:userUrl) LIMIT 1")
+    fun getByUrl(userUrl: String?): Link
+
     @Query("SELECT * FROM link_table WHERE link_url IN (:userIds)")
     fun loadAllByURL(userIds: IntArray): List<Link>
 

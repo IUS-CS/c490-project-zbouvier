@@ -2,23 +2,18 @@ package com.example.wikirando
 
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_scrolling.*
 import okhttp3.*
 import java.io.IOException
-import java.net.URL
 import org.json.JSONObject
-import android.R.string
 import androidx.room.Room
-
-
-
-
-
+import java.lang.Exception
 
 
 class ScrollingActivity : AppCompatActivity() {
@@ -26,19 +21,44 @@ class ScrollingActivity : AppCompatActivity() {
     lateinit var questionView: TextView
     private val tag = "MainActivity"
     private lateinit var db: AppDatabase
-    var text: String? = ""
-    var link: String? = ""
+    val viewModel: ScrollingActivityViewModel by lazy {
+        ViewModelProviders.of(this).get(ScrollingActivityViewModel::class.java)
+    }
+    @Override
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
          db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "link_table"
-        ).build()
-
+        ).allowMainThreadQueries().build()
+        Log.d(tag, db.linkDao().getAll().toString())
         Log.d(tag, "onCreate")
-        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scrolling)
         fab.setOnClickListener { _ ->
-            Log.d(tag, link!!)
+            viewModel.fabEnabled = !viewModel.fabEnabled
+            if(viewModel.fabEnabled)
+            {
+                fab.setImageResource(android.R.drawable.star_big_on)
+            }
+            else
+            {
+                fab.setImageResource(android.R.drawable.star_big_off)
+            }
+
+            var newLink = Link(null, viewModel.title!!, viewModel.link!!)
+            try
+            {
+                var doesThisWork = (db.linkDao().getByUrl(viewModel.link).linkUrl == "")
+                Log.d(tag, "$doesThisWork $title: ${viewModel.link} already exists!")
+            }
+            catch(e: Exception)
+            {
+                db.linkDao().insertAll(newLink)
+                Log.d(tag, "$title: ${viewModel.link} inserted!")
+            }
+            //Log.d(tag, link!!)
+            //Log.d(tag, db.linkDao().getAll().toString())
         }
         refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
@@ -57,6 +77,8 @@ class ScrollingActivity : AppCompatActivity() {
     }
     fun run(url: String)
     {
+        viewModel.fabEnabled = false
+        fab.setImageResource(android.R.drawable.star_big_off);
         Log.d(tag, "run")
         val request = Request.Builder()
             .url(url)
@@ -70,13 +92,14 @@ class ScrollingActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response)
             {
                 Log.d(tag, "onResponse")
-                text = response.body()?.string()
-                val resStr = text.toString()
+                viewModel.text = response.body()?.string()
+                val resStr = viewModel.text.toString()
                 val jsonTitle = JSONObject(resStr).getString("title")
                 val jsonSummary = JSONObject(resStr).getString("extract")
                 val contentUrls = JSONObject(resStr).getString("content_urls")
                 val mobileData = JSONObject(contentUrls).getString("mobile")
-                link = JSONObject(mobileData).getString("page")
+                viewModel.link = JSONObject(mobileData).getString("page")
+                viewModel.title = jsonTitle
                 Log.d(tag, jsonSummary)
                 this@ScrollingActivity.runOnUiThread(java.lang.Runnable {
                     questionView.text = jsonTitle+"\n\n\n"+jsonSummary
@@ -95,7 +118,7 @@ class ScrollingActivity : AppCompatActivity() {
         return user
     }
     private fun populateWithTestData(db: AppDatabase) {
-        var user = Link(1,"Testing", "ree.com")
+        var user = Link(null,"Testing", "ree.com")
 
         addLink(db, user)
     }
