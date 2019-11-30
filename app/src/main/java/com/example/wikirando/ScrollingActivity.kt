@@ -1,16 +1,12 @@
 package com.example.wikirando
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.TextView
-import android.widget.Toast
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_scrolling.*
 import okhttp3.*
@@ -25,7 +21,6 @@ class ScrollingActivity : AppCompatActivity() {
     internal lateinit var questionView: TextView
     private val tag = "MainActivity"
     private lateinit var db: AppDatabase
-
     val viewModel: ScrollingActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ScrollingActivityViewModel::class.java)
     }
@@ -41,39 +36,42 @@ class ScrollingActivity : AppCompatActivity() {
         Log.d(tag, db.linkDao().getAll().toString())
         Log.d(tag, "onCreate")
         setContentView(R.layout.activity_scrolling)
-        fab.setOnClickListener { _ ->
-            viewModel.fabEnabled = !viewModel.fabEnabled
-            if(viewModel.fabEnabled)
-            {
-                fab.setImageResource(android.R.drawable.star_big_on)
-            }
-            else
-            {
-                fab.setImageResource(android.R.drawable.star_big_off)
-            }
-
-            var newLink = Link(null, viewModel.title!!, viewModel.link!!)
-            try
-            {
-                var doesThisWork = (db.linkDao().getByUrl(viewModel.link).linkUrl == "")
-                Log.d(tag, "$doesThisWork $title: ${viewModel.link} already exists!")
-            }
-            catch(e: Exception)
-            {
-                db.linkDao().insertAll(newLink)
-                Log.d(tag, "$title: ${viewModel.link} inserted!")
-            }
-        }
         refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
             run(apiToCheck)
         }
         devButton.setOnClickListener { _ ->
-            val intent = Intent(this, Testing::class.java).apply {
+            val intent = Intent(this, YourFavorites::class.java).apply {
                 putExtra(EXTRA_MESSAGE, "uwu")
             }
             startActivity(intent)
         }
+        fab.setOnClickListener { _ ->
+            viewModel.fabEnabled = !viewModel.fabEnabled
+            if(viewModel.fabEnabled)
+            {
+                fab.setImageResource(android.R.drawable.star_big_on)
+                var newLink = Link(null, viewModel.title!!, viewModel.link!!)
+                try
+                {
+                    var doesThisWork = (db.linkDao().getByUrl(viewModel.link).linkUrl == "")
+                    Log.d(tag, "$doesThisWork $title: ${viewModel.link} already exists!")
+                }
+                catch(e: Exception)
+                {
+                    db.linkDao().insertAll(newLink)
+                    Log.d(tag, "$title: ${viewModel.link} inserted!")
+                }
+            }
+            else
+            {
+                fab.setImageResource(android.R.drawable.star_big_off)
+                db.linkDao().delete(db.linkDao().getByUrl(viewModel.link))
+            }
+
+
+        }
+
     }
     override fun onStart() {
         Log.d(tag, "OnStart")

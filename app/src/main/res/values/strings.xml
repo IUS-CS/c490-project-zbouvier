@@ -5,4 +5,6 @@
     <string name="loading_text">Loading...</string>
     <string name="title_activity_recycle_adapter">RecycleAdapter</string>
     <string name="title_activity_link_list_fragment">LinkListFragment</string>
+    <string name="title_activity_recycler">RecyclerActivity</string>
+    <string name="title_activity_testing">Your Favorites</string>
 </resources>
