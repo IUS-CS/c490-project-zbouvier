@@ -1,11 +1,13 @@
 package com.example.wikirando
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -17,7 +19,7 @@ import org.json.JSONObject
 import androidx.room.Room
 import java.lang.Exception
 
-
+private const val EXTRA_MESSAGE = "Ree"
 class ScrollingActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     internal lateinit var questionView: TextView
@@ -31,7 +33,7 @@ class ScrollingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-
+        /** Called when the user taps the Send button */
          db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "link_table"
@@ -65,6 +67,12 @@ class ScrollingActivity : AppCompatActivity() {
         refreshButton.setOnClickListener { _ ->
             val apiToCheck = getString(R.string.api_link)
             run(apiToCheck)
+        }
+        devButton.setOnClickListener { _ ->
+            val intent = Intent(this, Testing::class.java).apply {
+                putExtra(EXTRA_MESSAGE, "uwu")
+            }
+            startActivity(intent)
         }
     }
     override fun onStart() {
@@ -116,6 +124,7 @@ class ScrollingActivity : AppCompatActivity() {
             }
         })
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_scrolling, menu)
@@ -129,16 +138,6 @@ class ScrollingActivity : AppCompatActivity() {
         var user = Link(null,"Testing", "ree.com")
 
         addLink(db, user)
-    }
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show()
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show()
-        }
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
