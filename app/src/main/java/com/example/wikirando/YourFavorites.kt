@@ -15,11 +15,9 @@ import android.view.View
 import android.widget.*
 import android.widget.Toast
 import android.widget.TextView
-import android.widget.AdapterView
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.content.DialogInterface
 import android.net.Uri
+import androidx.appcompat.app.AlertDialog
 
 
 class YourFavorites : AppCompatActivity() {
@@ -40,17 +38,38 @@ class YourFavorites : AppCompatActivity() {
             myListOfUrls.add(it.linkUrl!!)
             myListOfTitles.add(it.linkTitle!!)
         }
-        val listItem = db.linkDao().getAll()
+        //val listItem = db.linkDao().getAll()
         val adapter = ArrayAdapter<String>(
             this,
             android.R.layout.simple_list_item_1,myListOfTitles
         )
-
         listView.adapter = adapter
+
         listView.setOnItemClickListener(OnItemClickListener { adapter, view, position, arg ->
-            val openURL = Intent(Intent.ACTION_VIEW)
-            openURL.data = Uri.parse(myListOfUrls[arg.toInt()])
-            startActivity(openURL)
+            val literals = arrayOf("January", "February", "March")
+            val builder = AlertDialog.Builder(this@YourFavorites)
+
+            // Set the alert dialog title
+            builder.setTitle(myListOfTitles[position])
+
+            // Set a positive button and its click listener on alert dialog
+            builder.setPositiveButton("View"){_,_ ->
+                // Do something when user press the positive button
+                val openURL = Intent(Intent.ACTION_VIEW)
+                openURL.data = Uri.parse(myListOfUrls[arg.toInt()])
+                startActivity(openURL)
+            }
+            // Display a neutral button on alert dialog
+            builder.setNeutralButton("Cancel"){_,_ ->
+                Toast.makeText(applicationContext,"Action cancelled.",Toast.LENGTH_SHORT).show()
+            }
+
+            // Finally, make the alert dialog using builder
+            val dialog: AlertDialog = builder.create()
+
+            // Display the alert dialog on app interface
+            dialog.show()
+
         }
         )
     }
